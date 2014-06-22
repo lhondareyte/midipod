@@ -46,5 +46,17 @@
 		void EVENT_USB_Device_ConfigurationChanged(void);
 		void EVENT_USB_Device_ControlRequest(void);
 
+#define PITCH_0		0x00
+#define PITCH_1		0x19
+#define PITCH_2		0x32
+#define PITCH_3		0x4B
+#define PITCH_4		0x64
+#define PITCH_5		0x7D
+#define PITCH_6		0x96
+#define PITCH_7		0xaf
+#define PITCH_8		0xc8
+#define PITCH_9		0xe1
+#define PITCH_10	0xff
+
 #endif
 
