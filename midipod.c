@@ -32,7 +32,7 @@
 #define DEBOUNCE_TIME	25
 #define BASE_NOTE	0x23
 
-uint8_t status, channel, data1, data2, p_state;
+uint8_t status, channel, data1, data2, p_state, offset;
 
 volatile MIDI_EventPacket_t Uart_MIDI_Event;
 
@@ -59,12 +59,12 @@ USB_ClassInfo_MIDI_Device_t Universal_MIDI_Interface =
 
 int footswitch_is_pressed (void)
 {
-	if (bit_is_clear(PINB,7))
+	if (bit_is_clear(PIND,3))
 	{
 		_delay_ms(DEBOUNCE_TIME);
-		if ( bit_is_clear (PINB,7))
+		if ( bit_is_clear (PIND,3))
 		{
-			while ( bit_is_clear (PINB,7))
+			while ( bit_is_clear (PIND,3))
 			{
 				MIDI_Device_USBTask(&Universal_MIDI_Interface);
 				USB_USBTask();
@@ -80,26 +80,30 @@ int main(void)
 	SetupHardware();
 	GlobalInterruptEnable();
 	p_state  = SWITCH_OFF;
-	
+
 	for (;;)
 	{
 
 		if ( footswitch_is_pressed() )
 		{
-
 			if (p_state == SWITCH_OFF) 
 			{
 				p_state=SWITCH_ON;
+				setBIT(PORTC,2);
 				status=0x90;
 			}
 			else 
 			{
 				p_state=SWITCH_OFF;
+				clearBIT(PORTC,2);
 				status=0x80;
 			}
 
+			if ( bit_is_set (PIND,1) && bit_is_set (PIND,2) ) offset=0;
+			if ( bit_is_set (PIND,1) && bit_is_clear (PIND,2) ) offset=12;
+			if ( bit_is_clear (PIND,1) && bit_is_set (PIND,2) ) offset=-12;
 			channel=0x01;
-			data1=0x23;
+			data1= BASE_NOTE + offset ;
 			data2=100;
                         Uart_MIDI_Event.Event = MIDI_EVENT(0, status);
                         Uart_MIDI_Event.Data1 = status|channel;
@@ -116,6 +120,7 @@ int main(void)
 
 
 
+
 void SetupHardware(void)
 {
 	/* Disable watchdog if enabled by bootloader/fuses */
@@ -128,21 +133,33 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	USB_Init();
 
-	/* ADC initialisation */
+	/* Toggle switch configuration */
+	clearBIT(DDRD,1);	
+	setBIT(PORTD,1);
+	clearBIT(DDRD,2);	
+	setBIT(PORTD,2);
 
 	/* Pedal switch configuration */
-	clearBIT(DDRB,7);;	
+	clearBIT(DDRD,3);	
+	setBIT(PORTD,3);
 
-	/* Debug LED */
-	setBIT(DDRB,6);;	
+	/* LEDs configuration */
+	setBIT(DDRC,2);		/* Switch Led */
+	setBIT(DDRD,0);		/* USB Led */	
 }
 
 
 void EVENT_USB_Device_Connect(void)
 {
-	setBIT(PORTB,6);
+	setBIT(PORTD,0);
 	_delay_ms(200);
-	clearBIT(PORTB,6);
+	clearBIT(PORTD,0);
+	_delay_ms(200);
+	setBIT(PORTD,0);
+	_delay_ms(200);
+	clearBIT(PORTD,0);
+	_delay_ms(200);
+	setBIT(PORTD,0);
 }
 
 
