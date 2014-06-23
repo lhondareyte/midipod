@@ -75,6 +75,69 @@ int footswitch_is_pressed (void)
 	return 0;
 }
 
+
+
+
+void SetupHardware(void)
+{
+	/* Disable watchdog if enabled by bootloader/fuses */
+	MCUSR &= ~(1 << WDRF);
+	wdt_disable();
+
+	/* Disable clock division */
+	clock_prescale_set(clock_div_1);
+
+	/* Hardware Initialization */
+	USB_Init();
+
+	/* Toggle switch configuration */
+	clearBIT(DDRD,1);	
+	setBIT(PORTD,1);
+	clearBIT(DDRD,2);	
+	setBIT(PORTD,2);
+
+	/* Pedal switch configuration */
+	clearBIT(DDRD,3);	
+	setBIT(PORTD,3);
+
+	/* LEDs configuration */
+	setBIT(DDRC,2);		/* Switch Led */
+	setBIT(DDRD,0);		/* USB Led */	
+
+	_delay_ms(200);
+	setBIT(PORTD,0);
+	_delay_ms(200);
+}
+
+
+void EVENT_USB_Device_Connect(void)
+{
+	clearBIT(PORTD,0);
+	_delay_ms(200);
+	setBIT(PORTD,0);
+}
+
+
+void EVENT_USB_Device_Disconnect(void)
+{
+}
+
+
+void EVENT_USB_Device_ConfigurationChanged(void)
+{
+	bool ConfigSuccess = true;
+
+	ConfigSuccess &= MIDI_Device_ConfigureEndpoints(&Universal_MIDI_Interface);
+
+}
+
+
+void EVENT_USB_Device_ControlRequest(void)
+{
+	MIDI_Device_ProcessControlRequest(&Universal_MIDI_Interface);
+}
+
+
 int main(void)
 {
 	SetupHardware();
@@ -119,66 +182,4 @@ int main(void)
 }
 
 
-
-
-void SetupHardware(void)
-{
-	/* Disable watchdog if enabled by bootloader/fuses */
-	MCUSR &= ~(1 << WDRF);
-	wdt_disable();
-
-	/* Disable clock division */
-	clock_prescale_set(clock_div_1);
-
-	/* Hardware Initialization */
-	USB_Init();
-
-	/* Toggle switch configuration */
-	clearBIT(DDRD,1);	
-	setBIT(PORTD,1);
-	clearBIT(DDRD,2);	
-	setBIT(PORTD,2);
-
-	/* Pedal switch configuration */
-	clearBIT(DDRD,3);	
-	setBIT(PORTD,3);
-
-	/* LEDs configuration */
-	setBIT(DDRC,2);		/* Switch Led */
-	setBIT(DDRD,0);		/* USB Led */	
-}
-
-
-void EVENT_USB_Device_Connect(void)
-{
-	setBIT(PORTD,0);
-	_delay_ms(200);
-	clearBIT(PORTD,0);
-	_delay_ms(200);
-	setBIT(PORTD,0);
-	_delay_ms(200);
-	clearBIT(PORTD,0);
-	_delay_ms(200);
-	setBIT(PORTD,0);
-}
-
-
-void EVENT_USB_Device_Disconnect(void)
-{
-}
-
-
-void EVENT_USB_Device_ConfigurationChanged(void)
-{
-	bool ConfigSuccess = true;
-
-	ConfigSuccess &= MIDI_Device_ConfigureEndpoints(&Universal_MIDI_Interface);
-
-}
-
-
-void EVENT_USB_Device_ControlRequest(void)
-{
-	MIDI_Device_ProcessControlRequest(&Universal_MIDI_Interface);
-}
 
