@@ -1,27 +1,27 @@
 /*
-  Copyright 2014  Luc Hondareyte <luc.hondareyte@laposte.net>
+   Copyright 2014  Luc Hondareyte <luc.hondareyte@laposte.net>
 
-  Based on LUFA MIDI Demo : 
-  Copyright 2014  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+   Based on LUFA MIDI Demo : 
+   Copyright 2014  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
-  Permission to use, copy, modify, distribute, and sell this
-  software and its documentation for any purpose is hereby granted
-  without fee, provided that the above copyright notice appear in
-  all copies and that both that the copyright notice and this
-  permission notice and warranty disclaimer appear in supporting
-  documentation, and that the name of the author not be used in
-  advertising or publicity pertaining to distribution of the
-  software without specific, written prior permission.
+   Permission to use, copy, modify, distribute, and sell this
+   software and its documentation for any purpose is hereby granted
+   without fee, provided that the above copyright notice appear in
+   all copies and that both that the copyright notice and this
+   permission notice and warranty disclaimer appear in supporting
+   documentation, and that the name of the author not be used in
+   advertising or publicity pertaining to distribution of the
+   software without specific, written prior permission.
 
-  The author disclaims all warranties with regard to this
-  software, including all implied warranties of merchantability
-  and fitness.  In no event shall the author be liable for any
-  special, indirect or consequential damages or any damages
-  whatsoever resulting from loss of use, data or profits, whether
-  in an action of contract, negligence or other tortious action,
-  arising out of or in connection with the use or performance of
-  this software.
-*/
+   The author disclaims all warranties with regard to this
+   software, including all implied warranties of merchantability
+   and fitness.  In no event shall the author be liable for any
+   special, indirect or consequential damages or any damages
+   whatsoever resulting from loss of use, data or profits, whether
+   in an action of contract, negligence or other tortious action,
+   arising out of or in connection with the use or performance of
+   this software.
+ */
 
 
 #include "midipod.h"
@@ -30,32 +30,31 @@
 #define SWITCH_ON	0x01
 #define SWITCH_OFF	0x00
 #define DEBOUNCE_TIME	25
-#define BASE_NOTE	0x23
+#define BASE_NOTE	0
 
-uint8_t status, channel, data1, data2, p_state, offset;
+uint8_t status, channel, data1, data2, p_state, breathlevel;
 
 volatile MIDI_EventPacket_t Uart_MIDI_Event;
 
 USB_ClassInfo_MIDI_Device_t Universal_MIDI_Interface =
+{
+	.Config =
 	{
-		.Config =
-			{
-				.StreamingInterfaceNumber = INTERFACE_ID_AudioStream,
-				.DataINEndpoint           =
-					{
-						.Address          = MIDI_STREAM_IN_EPADDR,
-						.Size             = MIDI_STREAM_EPSIZE,
-						.Banks            = 1,
-					},
-				.DataOUTEndpoint          =
-					{
-						.Address          = MIDI_STREAM_OUT_EPADDR,
-						.Size             = MIDI_STREAM_EPSIZE,
-						.Banks            = 1,
-					},
-			},
-	};
-
+		.StreamingInterfaceNumber = INTERFACE_ID_AudioStream,
+		.DataINEndpoint           =
+		{
+			.Address          = MIDI_STREAM_IN_EPADDR,
+			.Size             = MIDI_STREAM_EPSIZE,
+			.Banks            = 1,
+		},
+		.DataOUTEndpoint          =
+		{
+			.Address          = MIDI_STREAM_OUT_EPADDR,
+			.Size             = MIDI_STREAM_EPSIZE,
+			.Banks            = 1,
+		},
+	},
+};
 
 int footswitch_is_pressed (void)
 {
@@ -74,9 +73,6 @@ int footswitch_is_pressed (void)
 	}
 	return 0;
 }
-
-
-
 
 void SetupHardware(void)
 {
@@ -109,7 +105,6 @@ void SetupHardware(void)
 	_delay_ms(200);
 }
 
-
 void EVENT_USB_Device_Connect(void)
 {
 	clearBIT(PORTD,0);
@@ -117,11 +112,9 @@ void EVENT_USB_Device_Connect(void)
 	setBIT(PORTD,0);
 }
 
-
 void EVENT_USB_Device_Disconnect(void)
 {
 }
-
 
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
@@ -131,12 +124,10 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 
 }
 
-
 void EVENT_USB_Device_ControlRequest(void)
 {
 	MIDI_Device_ProcessControlRequest(&Universal_MIDI_Interface);
 }
-
 
 int main(void)
 {
@@ -151,35 +142,49 @@ int main(void)
 		{
 			if (p_state == SWITCH_OFF) 
 			{
+				/* Note ON */
 				p_state=SWITCH_ON;
 				setBIT(PORTC,2);
 				status=0x90;
 			}
 			else 
 			{
+				/* Note OFF */
 				p_state=SWITCH_OFF;
 				clearBIT(PORTC,2);
 				status=0x80;
 			}
 
-			if ( bit_is_set (PIND,1) && bit_is_set (PIND,2) ) offset=0;
-			if ( bit_is_set (PIND,1) && bit_is_clear (PIND,2) ) offset=12;
-			if ( bit_is_clear (PIND,1) && bit_is_set (PIND,2) ) offset=-12;
+			if ( bit_is_clear (PIND,1) && bit_is_set (PIND,2) ) breathlevel=90;
+			if ( bit_is_set (PIND,1) && bit_is_set (PIND,2) ) breathlevel=70;
+			if ( bit_is_set (PIND,1) && bit_is_clear (PIND,2) ) breathlevel=50;
 			channel=0x01;
-			data1= BASE_NOTE + offset ;
+			data1= BASE_NOTE;
 			data2=100;
-                        Uart_MIDI_Event.Event = MIDI_EVENT(0, status);
-                        Uart_MIDI_Event.Data1 = status|channel;
-                        Uart_MIDI_Event.Data2 = data1;
-                        Uart_MIDI_Event.Data3 = data2;
+			Uart_MIDI_Event.Event = MIDI_EVENT(0, status);
+
+			/* Envoi du note ON/OFF */
+			Uart_MIDI_Event.Data1 = status | channel;
+			Uart_MIDI_Event.Data2 = data1;
+			Uart_MIDI_Event.Data3 = data2;
 			MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
-                	MIDI_Device_Flush(&Universal_MIDI_Interface);
+			MIDI_Device_Flush(&Universal_MIDI_Interface);
+
+			_delay_ms(5);
+
+			/* Envoi du Breath control */
+			if ( status == 0x90 ) 
+			{
+				Uart_MIDI_Event.Event = MIDI_EVENT(0, 0xB0);
+				Uart_MIDI_Event.Data1 = 0xB0 | channel;
+				Uart_MIDI_Event.Data2 = 0x02;
+				Uart_MIDI_Event.Data3 = breathlevel;
+				MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
+				MIDI_Device_Flush(&Universal_MIDI_Interface);
+			}
 		}
-		
+
 		MIDI_Device_USBTask(&Universal_MIDI_Interface);
 		USB_USBTask();
 	}
 }
-
-
-
