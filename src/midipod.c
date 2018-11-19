@@ -30,7 +30,7 @@
 #define SWITCH_ON	0x01
 #define SWITCH_OFF	0x00
 #define DEBOUNCE_TIME	25
-#define BASE_NOTE	0
+#define BASE_NOTE	12
 
 uint8_t status, channel, data1, data2, p_state, breathlevel;
 
@@ -103,12 +103,12 @@ void SetupHardware(void)
 	_delay_ms(200);
 	setBIT(PORTD,0);
 	_delay_ms(200);
+	clearBIT(PORTD,0);
 }
 
 void EVENT_USB_Device_Connect(void)
 {
-	clearBIT(PORTD,0);
-	_delay_ms(200);
+	// Turn on USB LED
 	setBIT(PORTD,0);
 }
 
@@ -155,9 +155,9 @@ int main(void)
 				status=0x80;
 			}
 
-			if ( bit_is_clear (PIND,1) && bit_is_set (PIND,2) ) breathlevel=90;
-			if ( bit_is_set (PIND,1) && bit_is_set (PIND,2) ) breathlevel=70;
-			if ( bit_is_set (PIND,1) && bit_is_clear (PIND,2) ) breathlevel=50;
+			if ( bit_is_set (PIND,1) && bit_is_clear (PIND,2) ) breathlevel=80;
+			if ( bit_is_set (PIND,1) && bit_is_set (PIND,2) ) breathlevel=50;
+			if ( bit_is_clear (PIND,1) && bit_is_set (PIND,2) ) breathlevel=30;
 			channel=0x01;
 			data1= BASE_NOTE;
 			data2=100;
@@ -170,18 +170,18 @@ int main(void)
 			MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
 			MIDI_Device_Flush(&Universal_MIDI_Interface);
 
-			_delay_ms(5);
+		}
 
-			/* Envoi du Breath control */
-			if ( status == 0x90 ) 
-			{
-				Uart_MIDI_Event.Event = MIDI_EVENT(0, 0xB0);
-				Uart_MIDI_Event.Data1 = 0xB0 | channel;
-				Uart_MIDI_Event.Data2 = 0x02;
-				Uart_MIDI_Event.Data3 = breathlevel;
-				MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
-				MIDI_Device_Flush(&Universal_MIDI_Interface);
-			}
+		/* Envoi du Breath control */
+		if ( status == 0x90 ) 
+		{
+			Uart_MIDI_Event.Event = MIDI_EVENT(0, 0xB0);
+			Uart_MIDI_Event.Data1 = 0xB0 | channel;
+			Uart_MIDI_Event.Data2 = 0x02;
+			Uart_MIDI_Event.Data3 = breathlevel;
+			MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
+			MIDI_Device_Flush(&Universal_MIDI_Interface);
+			_delay_ms(5);
 		}
 
 		MIDI_Device_USBTask(&Universal_MIDI_Interface);
