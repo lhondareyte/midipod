@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name midipod-rescue)(type Legacy)(uri ${KIPRJMOD}/midipod-rescue.lib)(options "")(descr ""))
+)
