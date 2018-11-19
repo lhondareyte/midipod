@@ -1,0 +1,12 @@
+.DS_Store
+LUFA
+*.d
+*.elf
+*.eep
+*.o
+*.out
+*.map
+*.hex
+*.bin
+*~
+*bak
