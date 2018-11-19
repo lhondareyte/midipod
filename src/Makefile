@@ -15,7 +15,7 @@ OBJCOPY         :=$(CCPATH)/avr-objcopy
 
 SRC          	= $(wildcard *.c) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    	= ./LUFA
-CC_FLAGS     	=  -DUSE_LUFA_CONFIG_HEADER -IConfig/ -D F_CPU=$(HZ)
+CC_FLAGS     	=  -DUSE_LUFA_CONFIG_HEADER -IConfig/ 
 LD_FLAGS     	= 
 
 # Default target
