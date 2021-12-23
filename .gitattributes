@@ -1,0 +1,5 @@
+historic/*.eps linguist-detectable=false
+historic/*.pdf linguist-detectable=false
+references/*.pdf linguist-detectable=false
+cad/*.eps linguist-detectable=false
+cad/*.pdf linguist-detectable=false
