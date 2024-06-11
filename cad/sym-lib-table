@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name midipod-rescue)(type Legacy)(uri ${KIPRJMOD}/midipod-rescue.lib)(options "")(descr ""))
+  (version 7)
+  (lib (name "midipod-rescue")(type "KiCad")(uri "${KIPRJMOD}/midipod-rescue.kicad_sym")(options "")(descr ""))
 )
