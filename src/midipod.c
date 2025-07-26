@@ -34,7 +34,7 @@
 
 uint8_t status, channel, data1, data2, p_state, breathlevel;
 
-volatile MIDI_EventPacket_t Uart_MIDI_Event;
+MIDI_EventPacket_t Uart_MIDI_Event;
 
 USB_ClassInfo_MIDI_Device_t Universal_MIDI_Interface =
 {

@@ -9,13 +9,12 @@ HZ		= $(F_CPU)
 F_USB        	= $(F_CPU)
 OPTIMIZATION 	= s
 TARGET       	= midipod
-CCPATH          :=/usr/local/CrossPack-AVR/bin
-CC              :=$(CCPATH)/avr-gcc
-OBJCOPY         :=$(CCPATH)/avr-objcopy
+CC              := avr-gcc
+OBJCOPY         := avr-objcopy
 
 SRC          	= $(wildcard *.c) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
-LUFA_PATH    	= ./LUFA
-CC_FLAGS     	=  -DUSE_LUFA_CONFIG_HEADER -IConfig/ 
+LUFA_PATH    	= ./lufa/LUFA
+CC_FLAGS     	=  -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Werror
 LD_FLAGS     	= 
 
 # Default target
