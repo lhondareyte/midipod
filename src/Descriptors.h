@@ -1,8 +1,13 @@
 /*
-  Copyright 2014  Luc Hondareyte <luc.hondareyte@laposte.net>
+             LUFA Library
+     Copyright (C) Dean Camera, 2019.
 
-  Based on LUFA MIDI Demo : 
-  Copyright 2014  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  dean [at] fourwalledcubicle [dot] com
+           www.lufa-lib.org
+*/
+
+/*
+  Copyright 2019  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -22,6 +27,11 @@
   arising out of or in connection with the use or performance of
   this software.
 */
+
+/** \file
+ *
+ *  Header file for Descriptors.c.
+ */
 
 #ifndef _DESCRIPTORS_H_
 #define _DESCRIPTORS_H_
@@ -90,7 +100,7 @@
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
-		                                    const uint8_t wIndex,
+		                                    const uint16_t wIndex,
 		                                    const void** const DescriptorAddress)
 		                                    ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG(3);
 
