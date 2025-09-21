@@ -58,13 +58,10 @@ USB_ClassInfo_MIDI_Device_t Universal_MIDI_Interface =
 
 int footswitch_is_pressed (void)
 {
-	if (bit_is_clear(PIND,3))
-	{
+	if (bit_is_clear(PIND,3)) {
 		_delay_ms(DEBOUNCE_TIME);
-		if ( bit_is_clear (PIND,3))
-		{
-			while ( bit_is_clear (PIND,3))
-			{
+		if ( bit_is_clear (PIND,3)) {
+			while ( bit_is_clear (PIND,3)) {
 				MIDI_Device_USBTask(&Universal_MIDI_Interface);
 				USB_USBTask();
 			}
@@ -119,9 +116,7 @@ void EVENT_USB_Device_Disconnect(void)
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
 	bool ConfigSuccess = true;
-
 	ConfigSuccess &= MIDI_Device_ConfigureEndpoints(&Universal_MIDI_Interface);
-
 }
 
 void EVENT_USB_Device_ControlRequest(void)
@@ -135,20 +130,15 @@ int main(void)
 	GlobalInterruptEnable();
 	p_state  = SWITCH_OFF;
 
-	for (;;)
-	{
-
-		if ( footswitch_is_pressed() )
-		{
-			if (p_state == SWITCH_OFF) 
-			{
+	while (1) {
+		if ( footswitch_is_pressed() ) {
+			if (p_state == SWITCH_OFF) {
 				/* Note ON */
 				p_state=SWITCH_ON;
 				setBIT(PORTC,2);
 				status=0x90;
 			}
-			else 
-			{
+			else {
 				/* Note OFF */
 				p_state=SWITCH_OFF;
 				clearBIT(PORTC,2);
@@ -169,12 +159,10 @@ int main(void)
 			Uart_MIDI_Event.Data3 = data2;
 			MIDI_Device_SendEventPacket(&Universal_MIDI_Interface, &Uart_MIDI_Event);
 			MIDI_Device_Flush(&Universal_MIDI_Interface);
-
 		}
 
 		/* Envoi du Breath control */
-		if ( status == 0x90 ) 
-		{
+		if ( status == 0x90 ) {
 			Uart_MIDI_Event.Event = MIDI_EVENT(0, 0xB0);
 			Uart_MIDI_Event.Data1 = 0xB0 | channel;
 			Uart_MIDI_Event.Data2 = 0x02;
